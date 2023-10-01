@@ -63,9 +63,9 @@ from schema import And, Schema, Use
 class Allocate(Command):
 
     _schema = Schema({  #<1>
-        'orderid': int,
-         sku: str,
-         qty: And(Use(int), lambda n: n > 0)
+        'orderid': str,
+        'sku': str,
+        'qty': And(Use(int), lambda n: n > 0)
      }, ignore_extra_keys=True)
 
     orderid: str
@@ -74,8 +74,8 @@ class Allocate(Command):
 
     @classmethod
     def from_json(cls, data):  #<2>
-       data = json.loads(data)
-       return cls(**_schema.validate(data))
+        data = json.loads(data)
+        return cls(**_schema.validate(data))
 ----
 ====
 
@@ -111,12 +111,14 @@ def greater_than_zero(x):
 quantity = And(Use(int), greater_than_zero)  #<4>
 
 Allocate = command(  #<5>
+    'Allocate',
     orderid=int,
     sku=str,
     qty=quantity
 )
 
 AddStock = command(
+    'AddStock',
     sku=str,
     qty=quantity
 ----
@@ -298,7 +300,7 @@ def handle_change_batch_quantity(m, bus: messagebus.MessageBus):
     try:
         bus.handle_message('ChangeBatchQuantity', m)
     except ValidationError:
-       print('Skipping invalid message')
+        print('Skipping invalid message')
     except exceptions.InvalidSku as e:
         print(f'Unable to change stock for missing sku {e}')
 ----
@@ -360,10 +362,10 @@ class MessageUnprocessable(Exception):  #<1>
         self.message = message
 
 class ProductNotFound(MessageUnprocessable):  #<2>
-   """"
-   This exception is raised when we try to perform an action on a product
-   that doesn't exist in our database.
-   """"
+    """"
+    This exception is raised when we try to perform an action on a product
+    that doesn't exist in our database.
+    """"
 
     def __init__(self, message):
         super().__init__(message)
@@ -448,9 +450,9 @@ class MessageBus:
 
     def handle_message(self, message):
         try:
-           ...
-       except SkipMessage as e:
-           logging.warn(f"Skipping message {message.id} because {e.reason}")
+            ...
+        except SkipMessage as e:
+            logging.warn(f"Skipping message {message.id} because {e.reason}")
 ----
 ====
 
